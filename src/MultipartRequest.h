@@ -17,13 +17,12 @@ const String FILE_NAME = "\"; filename=\"";
 class MultipartRequest
 {
 public:
-  MultipartRequest(Print &printer, String boundary = BOUNDARY)
+  MultipartRequest(const String &boundary = BOUNDARY)
   {
-    this->printer = &printer;
     this->boundary = boundary;
   }
 
-  void addText(String name, String t)
+  void addText(const String &name, const String &t)
   {
     String data = DDASH;
     data += boundary;
@@ -37,7 +36,7 @@ public:
     data_len += data.length();
   }
 
-  void addFile(String name, File &f)
+  void addFile(const String &name, File &f)
   {
     file[file_len] = &f;
     String data = DDASH + boundary + NL;
@@ -48,12 +47,14 @@ public:
     data_len += data.length() + f.size() + 2;
   }
 
-  void write()
+  void printTo(Print *printer)
   {
     unsigned long c_len = calculateContentLength();
-
-    printer->println(MULTIPART_HEADER + boundary);
-    printer->println(CONTENT_LENGTH + String(c_len));
+    
+    printer->print(MULTIPART_HEADER);
+    printer->println(boundary);
+    printer->print(CONTENT_LENGTH);
+    printer->println(c_len);
     printer->println();
     for (uint8_t i = 0; i < text_len; i++)
     {
@@ -84,7 +85,6 @@ public:
   }
 
 private:
-  Print *printer;
   String boundary;
   File *file[10];
   String fileData[10];
